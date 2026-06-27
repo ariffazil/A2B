@@ -1,0 +1,29 @@
+{
+  "harness_version": "0.1",
+  "scenarios_path": "/root/AssetOpsBench/data/assetopsbench/data/failuresensoriq_standard/sample_50_questions.jsonl",
+  "n_scenarios": 2,
+  "n_scored": 2,
+  "n_correct": 0,
+  "accuracy": 0.0,
+  "llm_model": "MiniMax-M3",
+  "actor_id": "arifbench-eval",
+  "arifos_session_id": "SEAL-ff6a8d59ae3c4136",
+  "arifos_init_ok": true,
+  "governance_enabled": true,
+  "n_judged_hold": 2,
+  "n_governance_holds": 2,
+  "n_seals_written": 0,
+  "law_violations": {
+    "L11": 2
+  },
+  "blocked_at_gates": {
+    "GATE_1_IDENTITY": 2
+  },
+  "latency_ms": {
+    "p50": 6156,
+    "p95": 6156,
+    "mean": 5701
+  },
+  "confidence_cap": 0.85,
+  "_evidence_label": "DER"
+}
