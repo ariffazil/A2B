@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+title: "a2b — arifOS × AssetOpsBench Bridge"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - given-names: "Muhammad Arif"
+    family-names: "bin Fazil"
+    affiliation: "arifOS Federation"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+repository-code: "https://github.com/ariffazil/a2b"
+url: "https://github.com/ariffazil/a2b"
+license: "Apache-2.0"
+abstract: >
+  A thin bridge layer between arifOS's constitutional governance kernel and
+  the AssetOpsBench evaluation framework (IJCAI 2026 Industrial Automation
+  Challenge). The bridge calls arifOS via JSON-RPC (arif_init → arif_observe
+  → arif_judge → arif_seal) and produces VAULT999-sealed evidence for every
+  benchmark run.
+keywords:
+  - arifOS
+  - AssetOpsBench
+  - industrial AI
+  - constitutional governance
+  - benchmark
+  - IJCAI
+  - MCP
+  - LLM agent
+references:
+  - type: article
+    title: "AssetOpsBench: A Benchmark for Industrial Asset Operations Agents"
+    authors:
+      - given-names: "Dhaval"
+        family-names: "Patel"
+      - given-names: "Shuxin"
+        family-names: "Lin"
+    collection-title: "KDD 2026 Datasets & Benchmarks Track"
+    url: "https://arxiv.org/pdf/2506.03828"

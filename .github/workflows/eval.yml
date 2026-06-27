@@ -1,0 +1,117 @@
+name: Eval Smoke Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check harness/ src/agent/arifbench/
+      - run: ruff format --check harness/ src/agent/arifbench/
+
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check Python syntax
+        run: |
+          python3 -c "
+          import ast, sys, pathlib
+          errors = []
+          for p in pathlib.Path('.').rglob('*.py'):
+              try:
+                  ast.parse(p.read_text())
+              except SyntaxError as e:
+                  errors.append(f'{p}: {e}')
+          if errors:
+              for e in errors: print(f'ERROR: {e}')
+              sys.exit(1)
+          print(f'All .py files parse OK')
+          "
+
+  eval-data-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify eval data integrity
+        run: |
+          python3 -c "
+          import json, sys
+
+          checks = {
+              'smoke':        {'gov': True,  'acc': 0.0,  'n': 2,  'seals': 0, 'holds': 2},
+              'run001_gov':   {'gov': True,  'acc': 0.32, 'n': 50, 'seals': 0, 'holds': 50},
+              'run002_nogov': {'gov': False, 'acc': 0.36, 'n': 50, 'seals': 0, 'holds': 0},
+          }
+
+          ok = True
+          for run, expected in checks.items():
+              path = f'evals/{run}/eval_aggregate.json'
+              try:
+                  d = json.load(open(path))
+              except Exception as e:
+                  print(f'FAIL {run}: {e}')
+                  ok = False
+                  continue
+
+              issues = []
+              if d['governance_enabled'] != expected['gov']:
+                  issues.append(f'gov: {d[\"governance_enabled\"]} != {expected[\"gov\"]}')
+              if d['accuracy'] != expected['acc']:
+                  issues.append(f'acc: {d[\"accuracy\"]} != {expected[\"acc\"]}')
+              if d['n_scenarios'] != expected['n']:
+                  issues.append(f'n: {d[\"n_scenarios\"]} != {expected[\"n\"]}')
+              if d['n_seals_written'] != expected['seals']:
+                  issues.append(f'seals: {d[\"n_seals_written\"]} != {expected[\"seals\"]}')
+              if d['n_governance_holds'] != expected['holds']:
+                  issues.append(f'holds: {d[\"n_governance_holds\"]} != {expected[\"holds\"]}')
+
+              if issues:
+                  print(f'FAIL {run}: {issues}')
+                  ok = False
+              else:
+                  print(f'OK   {run}: gov={d[\"governance_enabled\"]} acc={d[\"accuracy\"]} n={d[\"n_scenarios\"]} seals={d[\"n_seals_written\"]} holds={d[\"n_governance_holds\"]}')
+
+          # Check JSONL files have correct line count
+          for run, expected_n in [('smoke', 2), ('run001_gov', 50), ('run002_nogov', 50)]:
+              path = f'evals/{run}/eval_results.jsonl'
+              try:
+                  lines = sum(1 for _ in open(path))
+                  if lines != expected_n:
+                      print(f'FAIL {run} JSONL: {lines} lines != {expected_n}')
+                      ok = False
+                  else:
+                      print(f'OK   {run} JSONL: {lines} lines')
+              except Exception as e:
+                  print(f'FAIL {run} JSONL: {e}')
+                  ok = False
+
+          if not ok:
+              sys.exit(1)
+          print('\nAll integrity checks passed.')
+          "
+
+  harness-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify harness imports
+        run: python3 -c "import ast; ast.parse(open('harness/eval_harness.py').read()); print('harness OK')"
