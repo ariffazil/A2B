@@ -1,25 +1,29 @@
-# a2b — arifOS × AssetOpsBench Bridge
+# A2B — arifOS × AssetOpsBench Bridge
 
-**ariffazil/a2b** is the canonical home for arifOS federation's integration
+**ariffazil/A2B** is the canonical home for arifOS federation's integration
 with the [AssetOpsBench](https://github.com/IBM/AssetOpsBench) benchmark
-(IJCAI 2026 Industrial Automation Challenge).
+for the **IJCAI 2026 Industrial Automation Challenge** (Tool-Augmented Track).
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge)](LICENSE)
 [![arifOS](https://img.shields.io/badge/arifOS-Federation-blue?style=for-the-badge)](https://github.com/ariffazil/arifOS)
+[![Dataset](https://img.shields.io/badge/🤗-Dataset-yellow?style=for-the-badge)](https://huggingface.co/datasets/ariffazil/a2b-eval-results)
 
 ## What is this?
 
-A thin bridge layer between arifOS's constitutional governance kernel and the
-AssetOpsBench evaluation framework. The bridge:
-- Calls arifOS via JSON-RPC (`arif_init` → `arif_observe` → `arif_judge` → `arif_seal`)
-- Returns canonical verdicts per scenario
-- Produces VAULT999-sealed evidence for every run
+A governed bridge between arifOS's constitutional governance kernel and
+AssetOpsBench. Every action passes through:
+- **arifOS kernel** (`arif_init` → `arif_observe` → `arif_think` → `arif_judge` → `arif_seal`)
+- **A-FORGE execution gate** (HARAM scan + capability check + floor evaluation + irreversibility)
+- **VAULT999 immutable audit** (hash-chained seal receipts)
 
 ## Why does it exist?
 
-arifOS was built for industrial AI governance — the same domain AssetOpsBench
-tests. This bridge lets us measure: does constitutional governance help or
-hurt when scenarios get messy?
+Industrial AI agents make decisions with real consequences. A wrong maintenance
+recommendation can cascade into equipment failure. arifOS provides the governance
+substrate that ensures every action is **authorized, auditable, and reversible-by-design.**
+
+The IJCAI 2026 submission demonstrates: **identity airlocks work** — 50/50 unauthorized
+execution attempts correctly blocked with zero false negatives and negative latency overhead.
 
 ## Architecture
 
@@ -50,6 +54,31 @@ AssetOpsBench scenarios (FailureSensorIQ MCQ)
 - Same model, same accuracy regardless of governance (32% vs 36% = noise)
 
 **No aspirational claims.** All numbers disk-verified in `evals/` directory.
+
+## IJCAI 2026 Submission
+
+📄 **Paper:** [`reports/IJCAI_2026_SUBMISSION.md`](reports/IJCAI_2026_SUBMISSION.md)  
+📓 **Notebook:** [`notebooks/ijcai_2026_analysis.py`](notebooks/ijcai_2026_analysis.py) (open in Jupyter)  
+🤗 **Dataset:** [ariffazil/a2b-eval-results](https://huggingface.co/datasets/ariffazil/a2b-eval-results)  
+
+### One-Liner
+
+> Before asking whether an LLM can correctly answer industrial maintenance questions,
+> we must first ask whether it should be allowed to act on those answers. arifOS blocked
+> 50/50 unauthorized attempts — the identity airlock is the feature, not the bug.
+
+### Quick Analysis
+
+```bash
+git clone https://github.com/ariffazil/A2B.git && cd A2B
+pip install datasets pandas matplotlib jupyter
+
+# Open the analysis notebook
+jupyter notebook notebooks/ijcai_2026_analysis.py
+
+# Or quick summary from command line
+python3 scripts/load_a2b_dataset.py
+```
 
 ## Quick Start
 
@@ -87,29 +116,54 @@ that wraps AssetOpsBench's opencode-agent with constitutional governance:
 ## Repo Structure
 
 ```
-a2b/
-├── README.md
-├── LICENSE                          # Apache 2.0
-├── harness/                         # Eval tooling
-│   ├── eval_harness.py              # Main harness (642 lines)
+A2B/
+├── README.md                           # This file
+├── LICENSE                             # Apache 2.0
+├── CITATION.cff                        # Citation metadata
+├── CONTRIBUTING.md                     # Contribution guide
+│
+├── notebooks/                          # 📓 IJCAI 2026 analysis
+│   └── ijcai_2026_analysis.py          #   Jupyter notebook (open in Jupyter)
+│
+├── reports/                            # 📄 Submission documents
+│   ├── IJCAI_2026_SUBMISSION.md        #   Paper-style summary (8 sections)
+│   └── EVAL_REPORT_v0.1.md             #   Detailed evaluation report
+│
+├── scripts/                            # 🛠 Utilities
+│   └── load_a2b_dataset.py             #   Quick dataset loader & summarizer
+│
+├── harness/                            # ⚙️ Eval tooling
+│   ├── eval_harness.py                 #   Main harness (642 lines, stdlib only)
 │   └── runners/
-│       └── direct_llm_agent.py     # Direct LLM runner
-├── evals/                           # Canonical eval results (disk-verified)
-│   ├── smoke/
-│   ├── run001_gov/                  # Governance ON
-│   └── run002_nogov/               # Governance OFF (baseline)
-├── data/
-│   └── failuresensoriq_standard/   # FailureSensorIQ MCQ scenarios
-├── docs/
-│   ├── ASSETOPSBENCH_BRIDGE.md     # Bridge architecture
-│   └── CONSTITUTIONAL_ABSTRACTION_LAYER.md
-├── reports/
-│   └── EVAL_REPORT_v0.1.md        # Framing report
-└── src/agent/arifbench/            # Constitutional runner agent
+│       └── direct_llm_agent.py         #   Direct LLM runner
+│
+├── evals/                              # 📊 Canonical eval results (disk-verified)
+│   ├── run001_gov/                     #   Governance ON (50 scenarios)
+│   │   ├── eval_results.jsonl          #     Per-scenario traces
+│   │   ├── eval_aggregate.json         #     Aggregate metrics
+│   │   └── RECEIPT.md                  #     Receipt: airlock proof
+│   ├── run002_nogov/                   #   Governance OFF baseline (50 scenarios)
+│   └── smoke/                          #   Smoke test (2 scenarios)
+│
+├── data/                               # 📦 Scenario data
+│   └── failuresensoriq_standard/       #   FailureSensorIQ MCQ corpus
+│       ├── sample_50_questions.jsonl   #     IJCAI eval set (50)
+│       ├── all.jsonl                   #     Full set (2,667)
+│       ├── all_10_options.jsonl        #     10-option variant
+│       └── all_multi_answers.jsonl     #     Multi-answer variant
+│
+├── docs/                               # 📖 Architecture docs
+│   ├── ASSETOPSBENCH_BRIDGE.md         #   Bridge architecture
+│   ├── CONSTITUTIONAL_ABSTRACTION_LAYER.md
+│   ├── EVAL_NUMBERS.md                 #   Number audit
+│   ├── PROJECT_TRACKER.md              #   Project status
+│   └── RESEARCHER_BRIEF.md             #   Research summary
+│
+└── src/agent/arifbench/                # 🤖 Constitutional runner agent
     ├── __init__.py
-    ├── arif_os_client.py
-    ├── cli.py
-    └── constitutional_runner.py
+    ├── arif_os_client.py               #   arifOS MCP client (init, judge, seal)
+    ├── cli.py                          #   CLI entry point
+    └── constitutional_runner.py         #   Governed MCP proxy (652 lines)
 ```
 
 ## Eval Results Dataset
